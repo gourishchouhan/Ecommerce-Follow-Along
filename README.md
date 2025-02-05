@@ -38,6 +38,8 @@ Get ready to dive deeper into the technical aspects of building your e-commerce 
   - **Tailwind CSS Configuration**: Configured Tailwind CSS for styling.  
   - **Login Page**: Designed and developed a functional, styled login page.  
 
-
-
-
+## Milestone 3: Backend Setup
+  - Organized backend folders into a structured format.
+  - Configured an Express server.
+  - Connected the server to MongoDB using Mongoose.
+  - Implemented basic error handling for better debugging.
