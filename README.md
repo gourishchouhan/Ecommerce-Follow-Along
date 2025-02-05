@@ -25,4 +25,19 @@ In this milestone, we focused on the foundational aspects of the e-commerce appl
 
 Get ready to dive deeper into the technical aspects of building your e-commerce application! 🚀
 
+## E-Commerce App - Milestone 2
+
+- **Project Structure**
+  - **Frontend**: React + Tailwind CSS (Login Page)
+  - **Backend**: Node.js + Express
+
+- **Features Implemented**
+  - **Project Setup**: Created structured folder hierarchy for frontend and backend.  
+  - **Frontend Setup**: Initialized a React app using Vite.  
+  - **Backend Setup**: Set up a simple Node.js Express server.  
+  - **Tailwind CSS Configuration**: Configured Tailwind CSS for styling.  
+  - **Login Page**: Designed and developed a functional, styled login page.  
+
+
+
 
