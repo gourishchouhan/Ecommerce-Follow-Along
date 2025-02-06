@@ -90,3 +90,42 @@ In the upcoming milestones, we’ll link this page to the backend and handle for
 - **Backend Route for Sign-Up**:
   - Set up an Express endpoint to handle the sign-up request.
   - Ensured that only unique emails are registered and returned appropriate error messages when a duplicate email is encountered.
+
+## Milestone 7: User Login and Authentication 🔑
+
+### Overview
+In this milestone, we focused on implementing a backend endpoint for user login. The goal was to validate user credentials and ensure that the user's encrypted password stored in the database is compared correctly with the input password.
+
+### Features Implemented:
+- **Login Endpoint**: 
+  - Created a POST endpoint `/api/users/login` for user login.
+  - Accepted user credentials (email/username and password) from the frontend.
+  - Retrieved the user data from the database based on the provided email/username.
+  
+- **Password Validation**:
+  - Used bcrypt to hash the entered password during login.
+  - Compared the resulting hash with the stored hashed password in the database for authentication.
+  - If the passwords matched, the user was authenticated; if not, an error was returned.
+
+### API Endpoint:
+1. **POST /api/users/login**:
+   - **Description**: Authenticates the user by comparing the provided password with the hashed password stored in the database.
+   - **Request Body**: 
+     ```json
+     {
+       "email": "user@example.com",
+       "password": "userpassword"
+     }
+     ```
+   - **Response**: 
+     - Success: Returns a success message and a token for session management.
+     - Error: Returns an error message if the credentials do not match.
+
+### Why Hashing Passwords?
+- **Protect User Data**: Even if hackers gain access to the database, they won’t be able to easily access passwords.
+- **Privacy**: Ensures passwords are not exposed in plain text.
+- **Compliance**: Meets regulatory standards such as GDPR and PCI-DSS.
+- **Prevents Theft**: Encrypted passwords are very difficult to reverse or guess.
+
+---
+

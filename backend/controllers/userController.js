@@ -1,35 +1,39 @@
 import User from "../models/userModel.js"
 
-export const signup = async (req, res) => {
-  try {
-    // 1. Extract user data from request body
-    const { name, email, password } = req.body
+// Keep existing signup function...
 
-    // 2. Check if user already exists
-    const existingUser = await User.findOne({ email })
-    if (existingUser) {
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body
+
+    // 1. Check if email and password exist
+    if (!email || !password) {
       return res.status(400).json({
         status: "error",
-        message: "User already exists with this email",
+        message: "Please provide email and password",
       })
     }
 
-    // 3. Create new user
-    // Password will be automatically encrypted by the pre-save middleware
-    const newUser = await User.create({
-      name,
-      email,
-      password,
-    })
+    // 2. Find user by email and explicitly select password
+    // We need to explicitly select password because we set select: false in our schema
+    const user = await User.findOne({ email }).select("+password")
+
+    // 3. Check if user exists and password is correct
+    if (!user || !(await user.correctPassword(password, user.password))) {
+      return res.status(401).json({
+        status: "error",
+        message: "Incorrect email or password",
+      })
+    }
 
     // 4. Remove password from output
-    newUser.password = undefined
+    user.password = undefined
 
-    // 5. Send response
-    res.status(201).json({
+    // 5. Send success response
+    res.status(200).json({
       status: "success",
       data: {
-        user: newUser,
+        user,
       },
     })
   } catch (error) {
