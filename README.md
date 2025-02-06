@@ -25,7 +25,7 @@ In this milestone, we focused on the foundational aspects of the e-commerce appl
 
 Get ready to dive deeper into the technical aspects of building your e-commerce application! 🚀
 
-## E-Commerce App - Milestone 2
+## Milestone 2: Structuring 
 
 - **Project Structure**
   - **Frontend**: React + Tailwind CSS (Login Page)
@@ -43,3 +43,15 @@ Get ready to dive deeper into the technical aspects of building your e-commerce 
   - Configured an Express server.
   - Connected the server to MongoDB using Mongoose.
   - Implemented basic error handling for better debugging.
+
+## Milestone 4: User Model, Controller, and File Uploads
+
+### Features Implemented:
+- Created a User model using Mongoose
+- Developed a User Controller for user registration and retrieval
+- Configured Multer to handle file uploads
+- Set up API routes for user-related operations
+
+### API Endpoints:
+1. **POST /api/users/register** - Register a new user (with profile picture)
+2. **GET /api/users/:id** - Get user details by ID
