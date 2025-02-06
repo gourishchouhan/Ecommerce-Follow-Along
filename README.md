@@ -25,7 +25,7 @@ In this milestone, we focused on the foundational aspects of the e-commerce appl
 
 Get ready to dive deeper into the technical aspects of building your e-commerce application! 🚀
 
-## Milestone 2: Structuring 
+## Milestone 2: Structuring
 
 - **Project Structure**
   - **Frontend**: React + Tailwind CSS (Login Page)
@@ -55,3 +55,38 @@ Get ready to dive deeper into the technical aspects of building your e-commerce 
 ### API Endpoints:
 1. **POST /api/users/register** - Register a new user (with profile picture)
 2. **GET /api/users/:id** - Get user details by ID
+
+---
+
+## Milestone 5: Frontend - Sign-Up Page Development
+
+### Features Implemented:
+- **Sign-Up Page Created**: A user-friendly sign-up form was developed with the following fields:
+  - **Name**
+  - **Email**
+  - **Password**
+  
+- **Form Validation Implemented**: 
+  - Validated user input to ensure the email follows the correct format.
+  - Ensured the password meets security standards (e.g., minimum length).
+  
+- **Responsive Design**: The page is mobile-friendly and visually clean.
+
+#### What’s Next:
+In the upcoming milestones, we’ll link this page to the backend and handle form submission to store user data securely.
+
+---
+
+## Milestone 6: Backend - User Registration with Password Encryption
+
+### Features Implemented:
+- **Password Encryption**:
+  - Used `bcryptjs` to hash the user’s password during registration.
+  - Ensured the password is stored securely in the database, preventing plain-text storage.
+
+- **User Data Storage**:
+  - Created a MongoDB model to store the user’s details, including name, email, and encrypted password.
+  
+- **Backend Route for Sign-Up**:
+  - Set up an Express endpoint to handle the sign-up request.
+  - Ensured that only unique emails are registered and returned appropriate error messages when a duplicate email is encountered.

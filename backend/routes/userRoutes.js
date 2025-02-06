@@ -1,21 +1,9 @@
-const express = require("express");
-const router = express.Router();
-const userController = require("../controllers/userController");
-const upload = require("../middlewares/multer");
+import express from "express"
+import { signup } from "../controllers/userController.js"
 
-// Register user with file upload
-router.post("/register", upload.single("profilePicture"), userController.registerUser);
+const router = express.Router()
 
-// Get all users
-router.get("/", userController.getAllUsers);
+router.post("/signup", signup)
 
-// Get user by ID
-router.get("/:id", userController.getUser);
+export default router
 
-// Update user
-router.put("/:id", upload.single("profilePicture"), userController.updateUser);
-
-// Delete user
-router.delete("/:id", userController.deleteUser);
-
-module.exports = router;

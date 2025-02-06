@@ -1,31 +1,42 @@
-const userController = require('../models/userModels');
-const bcrypt = require('bcrypt');
-exports.registerUser = async (req, res) => {
-    try {
-      const { name, email, password } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      const newUser = new User({
-        name,
-        email,
-        password: hashedPassword,
-        profileImage: req.file ? req.file.path : "",
-      });
-  
-      await newUser.save();
-      res.status(201).json({ message: "User registered successfully", user: newUser });
-    } catch (error) {
-      res.status(500).json({ message: "Error registering user", error });
+import User from "../models/userModel.js"
+
+export const signup = async (req, res) => {
+  try {
+    // 1. Extract user data from request body
+    const { name, email, password } = req.body
+
+    // 2. Check if user already exists
+    const existingUser = await User.findOne({ email })
+    if (existingUser) {
+      return res.status(400).json({
+        status: "error",
+        message: "User already exists with this email",
+      })
     }
-  };
-  
-  exports.getUser = async (req, res) => {
-    try {
-      const user = await User.findById(req.params.id);
-      if (!user) return res.status(404).json({ message: "User not found" });
-      
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+
+    // 3. Create new user
+    // Password will be automatically encrypted by the pre-save middleware
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+    })
+
+    // 4. Remove password from output
+    newUser.password = undefined
+
+    // 5. Send response
+    res.status(201).json({
+      status: "success",
+      data: {
+        user: newUser,
+      },
+    })
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      message: error.message,
+    })
+  }
+}
+
