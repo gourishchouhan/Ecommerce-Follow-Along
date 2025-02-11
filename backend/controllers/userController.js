@@ -1,46 +1,75 @@
-import User from "../models/userModel.js"
+const User = require('../models/userModels');
 
-// Keep existing signup function...
-
-export const login = async (req, res) => {
+exports.signup = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { name, email, password } = req.body;
 
-    // 1. Check if email and password exist
-    if (!email || !password) {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res.status(400).json({
-        status: "error",
-        message: "Please provide email and password",
-      })
+        status: 'error',
+        message: 'Email already registered'
+      });
     }
 
-    // 2. Find user by email and explicitly select password
-    // We need to explicitly select password because we set select: false in our schema
-    const user = await User.findOne({ email }).select("+password")
+    // Create new user
+    const user = await User.create({
+      name,
+      email,
+      password
+    });
 
-    // 3. Check if user exists and password is correct
-    if (!user || !(await user.correctPassword(password, user.password))) {
-      return res.status(401).json({
-        status: "error",
-        message: "Incorrect email or password",
-      })
-    }
+    // Remove password from response
+    user.password = undefined;
 
-    // 4. Remove password from output
-    user.password = undefined
+    res.status(201).json({
+      status: 'success',
+      data: { user }
+    });
 
-    // 5. Send success response
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    })
   } catch (error) {
     res.status(400).json({
-      status: "error",
-      message: error.message,
-    })
+      status: 'error',
+      message: error.message
+    });
   }
-}
+};
 
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid email or password'
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid email or password'
+      });
+    }
+
+    // Remove password from response
+    user.password = undefined;
+
+    res.status(200).json({
+      status: 'success',
+      data: { user }
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
