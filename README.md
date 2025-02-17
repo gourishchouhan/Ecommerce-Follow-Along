@@ -128,4 +128,10 @@ In this milestone, we focused on implementing a backend endpoint for user login.
 - **Prevents Theft**: Encrypted passwords are very difficult to reverse or guess.
 
 ---
+## Milestone 8: Product Card Component and Homepage
 
+### What was done?
+- Created a reusable **Product Card Component** in React.
+- Designed a **homepage layout** using Tailwind CSS to display multiple product cards.
+- Integrated the frontend with the backend to fetch and display products dynamically.
+- Set up the backend with a `Product` model and API endpoints for creating and fetching products.

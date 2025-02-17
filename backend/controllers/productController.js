@@ -1,37 +1,47 @@
-// backend/controllers/productController.js
 const Product = require('../models/productModel');
 
-exports.createProduct = async (req, res) => {
+// Create a new product
+const createProduct = async (req, res) => {
   try {
-    const product = await Product.create({
-      ...req.body,
-      createdBy: req.user._id
+    const { name, description, price, category, images, stock, createdBy } = req.body;
+
+    // Validate input
+    if (!name || !description || !price || !category || !images || !stock || !createdBy) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Create the product
+    const newProduct = new Product({
+      name,
+      description,
+      price,
+      category,
+      images,
+      stock,
+      createdBy,
     });
-    
-    res.status(201).json({
-      status: 'success',
-      data: { product }
-    });
+
+    await newProduct.save();
+
+    res.status(201).json({message: "Product created successfully", newProduct});
   } catch (error) {
-    res.status(400).json({
-      status: 'error',
-      message: error.message
-    });
+    console.error('Error creating product:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-exports.getAllProducts = async (req, res) => {
+// Get all products
+const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate('createdBy', 'name');
-    
-    res.status(200).json({
-      status: 'success',
-      data: { products }
-    });
+    const products = await Product.find().populate('createdBy', 'username email');
+    res.status(200).json(products);
   } catch (error) {
-    res.status(400).json({
-      status: 'error',
-      message: error.message
-    });
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Server error' });
   }
+};
+
+module.exports = {
+  createProduct,
+  getAllProducts,
 };
