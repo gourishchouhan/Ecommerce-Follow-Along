@@ -1,18 +1,18 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Login from './pages/login';
-import SignUp from './pages/signup';
-import HomePage from './pages/Homepage';
-
+import AuthPage from './pages/AuthPage';
+import HomePage from './pages/Homepage'; // Ensure the import path is correct
+import AddProduct from './pages/AddProduct';
+import ProductCard from './pages/ProductCard';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path ="/" element = {<Navigate to = "/login" replace/>}/>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/home" element={<HomePage />} />
-        {/* Other routes */}
+        <Route path="/" element={<Navigate to="/AuthPage" replace />} />
+        <Route path="/AuthPage" element={<AuthPage />} />
+        <Route path="/home" element={<HomePage />} /> {/* Use lowercase for consistency */}
+        <Route path="/AddProduct" element={<AddProduct />} />
+        <Route path="/ProductCard" element={<ProductCard />} />
       </Routes>
     </Router>
   );
