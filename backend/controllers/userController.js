@@ -1,38 +1,32 @@
-const User = require('../models/userModels');
+const User = require("../models/userModels");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Email already registered'
+        status: "error",
+        message: "Email already registered",
       });
     }
 
-    // Create new user
-    const user = await User.create({
-      name,
-      email,
-      password
-    });
-
-    // Remove password from response
+    const user = await User.create({ name, email, password });
     user.password = undefined;
 
-    res.status(201).json({
-      status: 'success',
-      data: { user }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
     });
 
-  } catch (error) {
-    res.status(400).json({
-      status: 'error',
-      message: error.message
+    res.status(201).json({
+      status: "success",
+      data: { user, token },
     });
+  } catch (error) {
+    res.status(400).json({ status: "error", message: error.message });
   }
 };
 
@@ -40,36 +34,25 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({
-        status: 'error',
-        message: 'Invalid email or password'
+        status: "error",
+        message: "Invalid email or password",
       });
     }
 
-    // Verify password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Invalid email or password'
-      });
-    }
-
-    // Remove password from response
     user.password = undefined;
 
-    res.status(200).json({
-      status: 'success',
-      data: { user }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
     });
 
-  } catch (error) {
-    res.status(400).json({
-      status: 'error',
-      message: error.message
+    res.status(200).json({
+      status: "success",
+      data: { user, token },
     });
+  } catch (error) {
+    res.status(400).json({ status: "error", message: error.message });
   }
 };

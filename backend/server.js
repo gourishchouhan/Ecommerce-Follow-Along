@@ -1,20 +1,25 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
-const connectDB = require('./config/db');
-const userRouter = require('./routes/userRoutes')
-const productRouter = require('./routes/productRoutes');
+const connectDB = require("./config/db");
+const userRouter = require("./routes/userRoutes");
+const productRouter = require("./routes/productRoutes");
+const cors = require("cors");
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(express.json());
+app.use(cors()); // Add CORS middleware
 
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 5000;
 
-app.use('/api/user', userRouter)
-app.use('/api/products', productRouter);
+app.use("/api/user", userRouter);
+try {
+  app.use("/api/products", productRouter);
+} catch (error) {
+  console.log("Product routes not loaded yet—skipping for now.");
+}
 
-
-connectDB()
-app.listen(port,function(){
-  console.log(`Server is running on ${port}`)
+connectDB().then(() => {
+  app.listen(port, () => {
+    console.log(`Server is running on ${port}`);
+  });
 });

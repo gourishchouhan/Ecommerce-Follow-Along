@@ -10,7 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/AuthPage" replace />} />
         <Route path="/AuthPage" element={<AuthPage />} />
-        <Route path="/home" element={<HomePage />} /> {/* Use lowercase for consistency */}
+        <Route path="/home" element={<HomePage />} /> 
         <Route path="/AddProduct" element={<AddProduct />} />
         <Route path="/ProductCard" element={<ProductCard />} />
       </Routes>

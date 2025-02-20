@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -10,79 +10,96 @@ const AuthPage = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formErrors = validateForm();
-    if (Object.keys(formErrors).length === 0) {
-      try {
-        // Here you would typically make an API call to authenticate
-        console.log("Auth attempt with:", formData);
-
-        // If authentication is successful, navigate to homepage
-        navigate("/home"); // or whatever your homepage route is
-      } catch (error) {
-        console.error("Authentication error:", error);
-        // Handle any authentication errors here
-        setErrors({ general: "Authentication failed. Please try again." });
-      }
-    } else {
-      setErrors(formErrors);
-    }
-  };
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const carouselImages = [
     {
-      src: "/api/placeholder/800/1000",
-      title: "Premium Fashion",
-      description: "Discover the latest trends in fashion"
+      src: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d",
+      title: "Timeless Style",
+      description: "Classic looks for every day",
     },
     {
-      src: "/api/placeholder/800/1000",
-      title: "Luxury Collection",
-      description: "Exclusive designs for unique style"
+      src: "https://images.unsplash.com/photo-1445205170230-053b83016050",
+      title: "Bold Choices",
+      description: "Stand out with confidence",
     },
     {
-      src: "/api/placeholder/800/1000",
-      title: "Seasonal Deals",
-      description: "Best offers on premium products"
+      src: "https://images.unsplash.com/photo-1470309864661-68328b2cd0a5",
+      title: "Daily Deals",
+      description: "Great finds at great prices",
     },
     {
-      src: "/api/placeholder/800/1000",
-      title: "New Arrivals",
-      description: "Fresh styles added daily"
-    }
+      src: "https://images.unsplash.com/photo-1483985988355-763728e1935b",
+      title: "Fresh Drops",
+      description: "New styles every week",
+    },
   ];
 
   const validateForm = () => {
     const newErrors = {};
     if (!isLogin && !formData.name) newErrors.name = "Name is required";
     if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
     if (!isLogin && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
     return newErrors;
   };
-
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length === 0) {
+      try {
+        const endpoint = isLogin ? "/api/user/login" : "/api/user/signup";
+        const url = `http://localhost:5000${endpoint}`;
+  
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        const result = await response.json();
+        console.log("API Response:", result);
+  
+        if (!response.ok) {
+          throw new Error(result.message || "Something went wrong");
+        }
+  
+        // Store the token in localStorage
+        localStorage.setItem("token", result.data.token);
+  
+        navigate("/home");
+      } catch (error) {
+        console.error("Authentication error:", error);
+        setErrors({ general: error.message || "Authentication failed. Please try again." });
+      }
+    } else {
+      setErrors(formErrors);
+    }
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  // Auto-advance carousel every 5 seconds
-  useState(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImageIndex((prev) =>
         prev === carouselImages.length - 1 ? 0 : prev + 1
@@ -92,211 +109,216 @@ const AuthPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-white">
-      {/* Left Side - Image Carousel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-black">
-        <AnimatePresence mode="wait">
-          <motion.img
+    <div className="min-h-screen flex bg-gray-100">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gray-200">
+        <AnimatePresence>
+          <motion.div
             key={currentImageIndex}
-            src={carouselImages[currentImageIndex].src}
-            alt="Fashion"
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="object-cover w-full h-full"
-          />
+            className="absolute inset-0"
+          >
+            <img
+              src={carouselImages[currentImageIndex].src}
+              alt={carouselImages[currentImageIndex].title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-800/70 to-transparent" />
+          </motion.div>
         </AnimatePresence>
 
-        {/* Carousel Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent text-white">
-          <motion.h3
-            key={`title-${currentImageIndex}`}
+        <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+          <motion.div
+            key={`content-${currentImageIndex}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl font-bold mb-2"
+            transition={{ duration: 0.4 }}
           >
-            {carouselImages[currentImageIndex].title}
-          </motion.h3>
-          <motion.p
-            key={`desc-${currentImageIndex}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white/80"
-          >
-            {carouselImages[currentImageIndex].description}
-          </motion.p>
+            <h3 className="text-2xl font-semibold mb-2">
+              {carouselImages[currentImageIndex].title}
+            </h3>
+            <p className="text-gray-200">
+              {carouselImages[currentImageIndex].description}
+            </p>
+          </motion.div>
         </div>
 
-        {/* Carousel Indicators */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {carouselImages.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentImageIndex(index)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'
+                index === currentImageIndex ? "bg-white scale-125" : "bg-gray-400"
               }`}
             />
           ))}
         </div>
       </div>
 
-      {/* Right Side - Auth Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12">
-        <div className="w-full max-w-md space-y-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8 space-y-6">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">
-              {isLogin ? "Welcome Back" : "Create Account"}
+            <h2 className="text-3xl font-bold text-gray-800">
+              {isLogin ? "Welcome Back" : "Join Choco"}
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              {isLogin ? "Sign in to your account" : "Join us today"}
+              {isLogin ? "Sign in to your account" : "Create an account today"}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          {errors.general && (
+            <div className="p-2 bg-red-100 text-red-600 rounded-md text-sm text-center">
+              {errors.general}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               {!isLogin && (
-                <div className="group">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
                   </label>
                   <input
-                    id="name"
                     name="name"
                     type="text"
-                    required
-                    className="block w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 hover:bg-white hover:shadow-sm"
-                    placeholder="Enter your full name"
                     value={formData.name}
                     onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-gray-800 focus:outline-none bg-gray-50 text-gray-800 transition-all duration-300 hover:border-gray-400"
+                    placeholder="Enter your name"
                   />
-                  {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-red-500">{errors.name}</p>
+                  )}
                 </div>
               )}
 
-              <div className="group">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email address
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
                 </label>
                 <input
-                  id="email"
                   name="email"
                   type="email"
-                  required
-                  className="block w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 hover:bg-white hover:shadow-sm"
-                  placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-gray-800 focus:outline-none bg-gray-50 text-gray-800 transition-all duration-300 hover:border-gray-400"
+                  placeholder="Enter your email"
                 />
-                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-500">{errors.email}</p>
+                )}
               </div>
 
-              <div className="group">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <div className="relative">
                   <input
-                    id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    required
-                    className="block w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 hover:bg-white hover:shadow-sm"
-                    placeholder={isLogin ? "Enter your password" : "Create a password"}
                     value={formData.password}
                     onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-gray-800 focus:outline-none bg-gray-50 text-gray-800 transition-all duration-300 hover:border-gray-400"
+                    placeholder={isLogin ? "Enter your password" : "Create a password"}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition-colors duration-200 rounded-full hover:bg-gray-100 p-1.5"
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                {errors.password && (
+                  <p className="mt-1 text-xs text-red-500">{errors.password}</p>
+                )}
               </div>
 
               {!isLogin && (
-                <div className="group">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Confirm Password
                   </label>
                   <div className="relative">
                     <input
-                      id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      required
-                      className="block w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 hover:bg-white hover:shadow-sm"
-                      placeholder="Confirm your password"
                       value={formData.confirmPassword}
                       onChange={handleChange}
+                      className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-gray-800 focus:outline-none bg-gray-50 text-gray-800 transition-all duration-300 hover:border-gray-400"
+                      placeholder="Confirm your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition-colors duration-200 rounded-full hover:bg-gray-100 p-1.5"
                     >
-                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                   {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                    <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>
                   )}
                 </div>
               )}
             </div>
 
             {isLogin && (
-              <div className="flex items-center justify-end">
-                <button className="text-sm font-medium text-gray-600 hover:text-black transition-colors">
-                  Forgot your password?
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                >
+                  Forgot Password?
                 </button>
               </div>
             )}
 
             {!isLogin && (
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 <input
                   id="terms"
-                  name="terms"
                   type="checkbox"
-                  className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded cursor-pointer"
+                  className="h-4 w-4 text-gray-800 focus:ring-gray-600 border-gray-300 rounded"
                 />
-                <label htmlFor="terms" className="ml-2 block text-sm text-gray-700 cursor-pointer">
-                  I agree to the Terms and Privacy Policy
+                <label htmlFor="terms" className="text-sm text-gray-600">
+                  I agree to the{" "}
+                  <span className="text-gray-800 hover:text-gray-900 cursor-pointer">
+                    Terms
+                  </span>{" "}
+                  and{" "}
+                  <span className="text-gray-800 hover:text-gray-900 cursor-pointer">
+                    Privacy Policy
+                  </span>
                 </label>
               </div>
             )}
 
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-black overflow-hidden transition-all duration-500
-              hover:bg-white hover:text-black
-              shadow-[0_2px_8px_rgba(0,0,0,0.25)]
-              hover:shadow-[0_8px_20px_rgba(0,0,0,0.35)]
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black
-              transform hover:-translate-y-1 active:translate-y-0"
+              className="w-full py-3 px-4 bg-gray-800 text-white rounded-md font-medium relative overflow-hidden group hover:shadow-xl transition-all duration-300"
             >
-              <span className="relative z-10">
-                {isLogin ? "Sign in" : "Sign up"}
+              <span className="relative z-10 group-hover:scale-105 inline-block transition-transform duration-200">
+                {isLogin ? "Sign In" : "Sign Up"}
               </span>
-              <span className="absolute left-0 top-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></span>
-              <span className="absolute left-0 bottom-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-right"></span>
+              <div className="absolute inset-0 bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
             </button>
 
             <div className="text-center text-sm">
               <span className="text-gray-600">
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                {isLogin ? "New here? " : "Already registered? "}
               </span>
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="font-medium text-black hover:text-gray-700 transition duration-300 ease-in-out"
+                className="text-gray-800 hover:text-gray-900 font-medium transition-colors duration-200"
               >
-                {isLogin ? "Sign up" : "Sign in"}
+                {isLogin ? "Create an account" : "Sign in"}
               </button>
             </div>
           </form>

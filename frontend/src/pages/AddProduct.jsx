@@ -1,17 +1,20 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Upload, X, Check, Loader } from 'lucide-react';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Upload, X, Check, Loader } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AddProduct = () => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('');
-  const [stock, setStock] = useState('');
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+  const [stock, setStock] = useState("");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewUrls, setPreviewUrls] = useState([]);
+  const [error, setError] = useState("");
 
   const handleImageChange = (e) => {
     const files = e.target.files;
@@ -20,7 +23,7 @@ const AddProduct = () => {
 
   const handleFiles = (files) => {
     setImages([...files]);
-    const urls = Array.from(files).map(file => URL.createObjectURL(file));
+    const urls = Array.from(files).map((file) => URL.createObjectURL(file));
     setPreviewUrls(urls);
   };
 
@@ -56,163 +59,174 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     const formData = new FormData();
-    formData.append('name', name);
-    formData.append('description', description);
-    formData.append('price', price);
-    formData.append('category', category);
-    formData.append('stock', stock);
-    images.forEach((image) => {
-      formData.append('images', image);
-    });
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("category", category);
+    formData.append("stock", stock);
+    images.forEach((image) => formData.append("images", image));
+
+    console.log("Sending to backend:", { name, description, price, category, stock, images: images.length });
 
     try {
-      const response = await fetch('/api/products', {
-        method: 'POST',
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please log in to add a product");
+      }
+
+      const response = await fetch("http://localhost:5000/api/products", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
         body: formData,
       });
+
       const data = await response.json();
-      if (data.status === 'success') {
-        showSuccessMessage();
+      console.log("API Response:", data);
+
+      if (data.status === "success") {
+        alert("Product added successfully!"); // Replace with toast later
         resetForm();
+        navigate("/home");
       } else {
-        showErrorMessage();
+        throw new Error(data.message || "Failed to add product");
       }
     } catch (error) {
-      console.error('Error creating product:', error);
-      showErrorMessage();
+      console.error("Error creating product:", error);
+      setError(error.message || "Error adding product");
     } finally {
       setLoading(false);
     }
   };
 
   const resetForm = () => {
-    setName('');
-    setDescription('');
-    setPrice('');
-    setCategory('');
-    setStock('');
+    setName("");
+    setDescription("");
+    setPrice("");
+    setCategory("");
+    setStock("");
     setImages([]);
     setPreviewUrls([]);
-  };
-
-  const showSuccessMessage = () => {
-    // You can replace this with a proper toast notification
-    alert('Product added successfully!');
-  };
-
-  const showErrorMessage = () => {
-    // You can replace this with a proper toast notification
-    alert('Error adding product');
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white"
+      transition={{ duration: 0.6 }}
+      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gray-100"
     >
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white p-8 rounded-2xl shadow-xl"
+          className="bg-white p-8 rounded-lg shadow-md"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
             Add New Product
           </h2>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="p-2 bg-red-100 text-red-600 rounded-md text-sm text-center mb-4"
+            >
+              {error}
+            </motion.div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Product Name
               </label>
               <motion.input
-                whileFocus={{ scale: 1.01 }}
+                whileFocus={{ scale: 1.02 }}
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-800 focus:border-transparent bg-gray-50 text-gray-800 transition-all duration-300"
                 required
                 placeholder="Enter product name"
               />
             </div>
 
-            {/* Description Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
               <motion.textarea
-                whileFocus={{ scale: 1.01 }}
+                whileFocus={{ scale: 1.02 }}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all duration-200 outline-none min-h-[100px]"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-800 focus:border-transparent bg-gray-50 text-gray-800 transition-all duration-300 min-h-[100px]"
                 required
                 placeholder="Describe your product"
               />
             </div>
 
-            {/* Price and Stock Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Price
                 </label>
                 <motion.input
-                  whileFocus={{ scale: 1.01 }}
+                  whileFocus={{ scale: 1.02 }}
                   type="number"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all duration-200 outline-none"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-800 focus:border-transparent bg-gray-50 text-gray-800 transition-all duration-300"
                   required
                   placeholder="0.00"
                   step="0.01"
+                  min="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Stock
                 </label>
                 <motion.input
-                  whileFocus={{ scale: 1.01 }}
+                  whileFocus={{ scale: 1.02 }}
                   type="number"
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all duration-200 outline-none"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-800 focus:border-transparent bg-gray-50 text-gray-800 transition-all duration-300"
                   required
                   placeholder="0"
+                  min="0"
                 />
               </div>
             </div>
 
-            {/* Category Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Category
               </label>
               <motion.input
-                whileFocus={{ scale: 1.01 }}
+                whileFocus={{ scale: 1.02 }}
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-800 focus:border-transparent bg-gray-50 text-gray-800 transition-all duration-300"
                 required
                 placeholder="Enter product category"
               />
             </div>
 
-            {/* Image Upload Area */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Product Images
               </label>
               <div
-                className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
-                  dragActive ? 'border-purple-600 bg-purple-50' : 'border-gray-300'
+                className={`relative border-2 border-dashed rounded-md p-6 transition-colors ${
+                  dragActive ? "border-gray-800 bg-gray-200" : "border-gray-300 bg-gray-50"
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -231,48 +245,48 @@ const AddProduct = () => {
                   htmlFor="image-upload"
                   className="flex flex-col items-center cursor-pointer"
                 >
-                  <Upload className="w-12 h-12 text-gray-400 mb-3" />
+                  <Upload className="w-10 h-10 text-gray-500 mb-2" />
                   <span className="text-sm text-gray-600">
-                    Drag and drop your images here or click to browse
+                    Drag and drop or click to upload images
                   </span>
                 </label>
               </div>
 
-              {/* Image Previews */}
               {previewUrls.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {previewUrls.map((url, index) => (
                     <div key={index} className="relative group">
                       <img
                         src={url}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg"
+                        className="w-full h-20 object-cover rounded-md"
                       />
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       >
-                        <X className="w-4 h-4" />
-                      </button>
+                        <X className="w-3 h-3" />
+                      </motion.button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Submit Button */}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
               type="submit"
-              className="w-full py-3 px-4 bg-black text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 transform hover:translate-y-1 relative overflow-hidden flex items-center justify-center space-x-2 disabled:opacity-70"
+              className="w-full py-3 px-4 bg-gray-800 text-white rounded-md font-medium shadow-md hover:bg-gray-700 transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? (
                 <>
                   <Loader className="w-5 h-5 animate-spin" />
-                  <span>Adding Product...</span>
+                  <span>Adding...</span>
                 </>
               ) : (
                 <>
