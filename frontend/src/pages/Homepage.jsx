@@ -82,6 +82,7 @@ const HomePage = () => {
               { to: "/trending", icon: Flame, label: "Trending" },
               { to: "/favourites", icon: Heart, label: "Favourites" },
               { to: "/cart", icon: ShoppingBag, label: "Cart" },
+              { to: "/my-products", icon: User, label: "My Products" }, // Matches route
               { to: "/account", icon: User, label: "Account" },
             ].map(({ to, icon: Icon, label }) => (
               <li key={to}>

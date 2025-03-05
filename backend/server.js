@@ -7,16 +7,15 @@ const cors = require("cors");
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // Add CORS middleware
+app.use(cors());
 
 const port = process.env.PORT || 5000;
 
+console.log("Loading userRouter:", userRouter); // Debug log
+console.log("Loading productRouter:", productRouter); // Debug log
+
 app.use("/api/user", userRouter);
-try {
-  app.use("/api/products", productRouter);
-} catch (error) {
-  console.log("Product routes not loaded yet—skipping for now.");
-}
+app.use("/api/products", productRouter);
 
 connectDB().then(() => {
   app.listen(port, () => {

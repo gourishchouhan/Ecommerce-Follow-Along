@@ -19,22 +19,22 @@ const AuthPage = () => {
 
   const carouselImages = [
     {
-      src: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d",
+      src: "https://res.cloudinary.com/dwhdvrdol/image/upload/v1741075662/photo-1490481651871-ab68de25d43d_cjlzdc.jpg",
       title: "Timeless Style",
       description: "Classic looks for every day",
     },
     {
-      src: "https://images.unsplash.com/photo-1445205170230-053b83016050",
+      src: "https://res.cloudinary.com/dwhdvrdol/image/upload/v1741075639/photo-1445205170230-053b83016050_khnzpm.jpg",
       title: "Bold Choices",
       description: "Stand out with confidence",
     },
     {
-      src: "https://images.unsplash.com/photo-1470309864661-68328b2cd0a5",
+      src: "https://res.cloudinary.com/dwhdvrdol/image/upload/v1741075616/photo-1470309864661-68328b2cd0a5_invybq.jpg",
       title: "Daily Deals",
       description: "Great finds at great prices",
     },
     {
-      src: "https://images.unsplash.com/photo-1483985988355-763728e1935b",
+      src: "https://res.cloudinary.com/dwhdvrdol/image/upload/v1741075582/photo-1483985988355-763728e1935b_ehyevm.jpg",
       title: "Fresh Drops",
       description: "New styles every week",
     },
